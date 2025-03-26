@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock Paper Scissors</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .game-arena {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        
+        .choices {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .choice {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            background-color: #ffffff;
+            border: 3px solid #cccccc;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
+                        border-color 0.3s ease,
+                        box-shadow 0.3s ease;
+            font-size: 40px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .choice:before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0) 70%);
+            top: -50%;
+            left: -50%;
+            transition: all 0.5s ease;
+        }
+        
+        .choice:hover:before {
+            top: -20%;
+            left: -20%;
+        }
+        
+        .choice:hover {
+            transform: scale(1.15) rotate(5deg);
+            border-color: #3498db;
+            box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3);
+        }
+        
+        #rock:hover {
+            border-color: #e74c3c;
+            box-shadow: 0 8px 16px rgba(231, 76, 60, 0.3);
+        }
+        
+        #paper:hover {
+            border-color: #3498db;
+            box-shadow: 0 8px 16px rgba(52, 152, 219, 0.3);
+        }
+        
+        #scissors:hover {
+            border-color: #9b59b6;
+            box-shadow: 0 8px 16px rgba(155, 89, 182, 0.3);
+        }
+        
+        .result-display {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 600px;
+            margin-top: 20px;
+            animation: fadeIn 1s ease-out;
+        }
+        
+        .player-section, .computer-section {
+            text-align: center;
+            width: 45%;
+            transition: all 0.3s ease;
+        }
+        
+        .vs {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            animation: pulse 1.5s infinite;
+        }
+        
+        .selection {
+            width: 80px;
+            height: 80px;
+            margin: 10px auto;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            background-color: #f8f9fa;
+            border: 2px solid #dee2e6;
+            transition: all 0.3s ease;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .selection.winner {
+            animation: winner 1s ease infinite;
+            border-color: #27ae60;
+            box-shadow: 0 0 15px rgba(39, 174, 96, 0.5);
+        }
+        
+        .selection.loser {
+            opacity: 0.7;
+        }
+        
+        .result-message {
+            margin-top: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            min-height: 40px;
+            padding: 10px;
+            border-radius: 8px;
+            transition: all 0.5s ease;
+            animation: fadeInUp 0.5s ease-out;
+        }
+        
+        .score-board {
+            display: flex;
+            justify-content: space-around;
+            width: 100%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 15px;
+            background-color: rgba(248, 249, 250, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            animation: fadeInDown 0.8s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .score-board:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #3498db, #2ecc71);
+        }
+        
+        .score {
+            text-align: center;
+            font-size: 18px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .score-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            transition: all 0.3s ease;
+        }
+        
+        .score-value.updated {
+            animation: scoreUpdate 0.5s ease;
+        }
+        
+        #reset-btn {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+            animation: fadeIn 1s ease-out;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #reset-btn:hover {
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(231, 76, 60, 0.4);
+        }
+        
+        #reset-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                                transparent,
+                                rgba(255, 255, 255, 0.2),
+                                transparent);
+            transition: 0.5s;
+        }
+        
+        #reset-btn:hover:before {
+            left: 100%;
+        }
+        
+        @keyframes winner {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 10px rgba(39, 174, 96, 0.5);
+            }
+            50% {
+                transform: scale(1.1);
+                box-shadow: 0 0 20px rgba(39, 174, 96, 0.7);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 10px rgba(39, 174, 96, 0.5);
+            }
+        }
+        
+        @keyframes scoreUpdate {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.5);
+                color: #27ae60;
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes choiceAnimation {
+            0% {
+                transform: translateY(0) rotate(0);
+            }
+            50% {
+                transform: translateY(-20px) rotate(10deg);
+            }
+            100% {
+                transform: translateY(0) rotate(0);
+            }
+        }
+        
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-container">
+            <div class="game-header">
+                <h2 class="game-title">Rock Paper Scissors</h2>
+                <button class="back-button" onclick="location.href='index.html'">Back to Menu</button>
+            </div>
+            
+            <div class="score-board">
+                <div class="score">
+                    <div>Player</div>
+                    <div id="player-score" class="score-value">0</div>
+                </div>
+                <div class="score">
+                    <div>Ties</div>
+                    <div id="tie-score" class="score-value">0</div>
+                </div>
+                <div class="score">
+                    <div>Computer</div>
+                    <div id="computer-score" class="score-value">0</div>
+                </div>
+            </div>
+            
+            <div class="game-arena">
+                <h3>Make your choice:</h3>
+                <div class="choices">
+                    <div class="choice" id="rock">👊</div>
+                    <div class="choice" id="paper">✋</div>
+                    <div class="choice" id="scissors">✌️</div>
+                </div>
+                
+                <div class="result-display">
+                    <div class="player-section">
+                        <h3>You</h3>
+                        <div class="selection" id="player-selection"></div>
+                    </div>
+                    <div class="vs">VS</div>
+                    <div class="computer-section">
+                        <h3>Computer</h3>
+                        <div class="selection" id="computer-selection"></div>
+                    </div>
+                </div>
+                
+                <div class="result-message" id="result-message">Choose an option to start the game!</div>
+                
+                <button id="reset-btn" style="margin-top: 20px; padding: 10px 20px;">Reset Score</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Elements
+            const choices = document.querySelectorAll('.choice');
+            const playerSelection = document.getElementById('player-selection');
+            const computerSelection = document.getElementById('computer-selection');
+            const resultMessage = document.getElementById('result-message');
+            const playerScoreElement = document.getElementById('player-score');
+            const tieScoreElement = document.getElementById('tie-score');
+            const computerScoreElement = document.getElementById('computer-score');
+            const resetBtn = document.getElementById('reset-btn');
+            
+            // Game state
+            let scores = {
+                player: 0,
+                computer: 0,
+                tie: 0
+            };
+            
+            // Load scores from localStorage if available
+            if (localStorage.getItem('rpsScores')) {
+                scores = JSON.parse(localStorage.getItem('rpsScores'));
+                updateScoreDisplay();
+            }
+            
+            // Map of choices to emojis
+            const choiceEmojis = {
+                rock: '👊',
+                paper: '✋',
+                scissors: '✌️'
+            };
+            
+            // Add click event to all choices
+            choices.forEach(choice => {
+                choice.addEventListener('click', () => {
+                    // Add animation to the clicked choice
+                    choice.style.animation = 'choiceAnimation 0.5s ease';
+                    choice.addEventListener('animationend', function() {
+                        this.style.animation = '';
+                    }, {once: true});
+                    
+                    playGame(choice.id);
+                });
+            });
+            
+            // Reset button event
+            resetBtn.addEventListener('click', () => {
+                scores = {
+                    player: 0,
+                    computer: 0,
+                    tie: 0
+                };
+                updateScoreDisplay();
+                saveScores();
+                
+                // Clear selections and result message
+                playerSelection.innerHTML = '';
+                playerSelection.classList.remove('winner', 'loser');
+                computerSelection.innerHTML = '';
+                computerSelection.classList.remove('winner', 'loser');
+                resultMessage.textContent = 'Scores have been reset. Choose an option to start again!';
+                resultMessage.style.color = '#2c3e50';
+                
+                // Add reset animation
+                resetBtn.classList.add('active');
+                setTimeout(() => resetBtn.classList.remove('active'), 300);
+                
+                // Add shake animation to scoreboard
+                document.querySelector('.score-board').style.animation = 'shake 0.5s ease-in-out';
+                setTimeout(() => {
+                    document.querySelector('.score-board').style.animation = '';
+                }, 500);
+            });
+            
+            // Play game logic
+            function playGame(playerChoice) {
+                // Get computer choice
+                const choices = ['rock', 'paper', 'scissors'];
+                const computerChoice = choices[Math.floor(Math.random() * 3)];
+                
+                // Display selections
+                playerSelection.innerHTML = choiceEmojis[playerChoice];
+                playerSelection.classList.remove('winner', 'loser');
+                computerSelection.classList.remove('winner', 'loser');
+                
+                // Animate computer selection
+                let animationCount = 0;
+                const animationInterval = setInterval(() => {
+                    computerSelection.innerHTML = choiceEmojis[choices[animationCount % 3]];
+                    computerSelection.style.transform = `scale(${1 + (animationCount % 3) * 0.1})`;
+                    animationCount++;
+                    
+                    if (animationCount > 5) {
+                        clearInterval(animationInterval);
+                        computerSelection.style.transform = 'scale(1)';
+                        computerSelection.innerHTML = choiceEmojis[computerChoice];
+                        
+                        // Determine winner and update score
+                        const result = determineWinner(playerChoice, computerChoice);
+                        updateScore(result);
+                        
+                        // Apply winner/loser styles
+                        if (result === 'player') {
+                            playerSelection.classList.add('winner');
+                            computerSelection.classList.add('loser');
+                        } else if (result === 'computer') {
+                            computerSelection.classList.add('winner');
+                            playerSelection.classList.add('loser');
+                        }
+                    }
+                }, 100);
+            }
+            
+            // Determine winner logic
+            function determineWinner(playerChoice, computerChoice) {
+                if (playerChoice === computerChoice) {
+                    return 'tie';
+                }
+                
+                if (
+                    (playerChoice === 'rock' && computerChoice === 'scissors') ||
+                    (playerChoice === 'paper' && computerChoice === 'rock') ||
+                    (playerChoice === 'scissors' && computerChoice === 'paper')
+                ) {
+                    return 'player';
+                }
+                
+                return 'computer';
+            }
+            
+            // Update score based on result
+            function updateScore(result) {
+                scores[result]++;
+                updateScoreDisplay();
+                
+                // Display result message with animation
+                switch (result) {
+                    case 'player':
+                        resultMessage.textContent = 'You win! 🎉';
+                        resultMessage.style.color = '#27ae60';
+                        // Add win animation to player score
+                        playerScoreElement.classList.add('updated');
+                        setTimeout(() => playerScoreElement.classList.remove('updated'), 500);
+                        break;
+                    case 'computer':
+                        resultMessage.textContent = 'Computer wins! 😢';
+                        resultMessage.style.color = '#e74c3c';
+                        // Add win animation to computer score
+                        computerScoreElement.classList.add('updated');
+                        setTimeout(() => computerScoreElement.classList.remove('updated'), 500);
+                        break;
+                    case 'tie':
+                        resultMessage.textContent = "It's a tie! 🤝";
+                        resultMessage.style.color = '#f39c12';
+                        // Add win animation to tie score
+                        tieScoreElement.classList.add('updated');
+                        setTimeout(() => tieScoreElement.classList.remove('updated'), 500);
+                        break;
+                }
+                
+                // Add animation to result message
+                resultMessage.style.animation = 'fadeIn 0.5s ease-out';
+                setTimeout(() => resultMessage.style.animation = '', 500);
+                
+                // Save scores to localStorage
+                saveScores();
+            }
+            
+            // Update score display
+            function updateScoreDisplay() {
+                playerScoreElement.textContent = scores.player;
+                tieScoreElement.textContent = scores.tie;
+                computerScoreElement.textContent = scores.computer;
+            }
+            
+            // Save scores to localStorage
+            function saveScores() {
+                localStorage.setItem('rpsScores', JSON.stringify(scores));
+            }
+        });
+    </script>
+</body>
+</html>
