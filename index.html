@@ -5,10 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Game Collection</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        .visitor-counter {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 8px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            padding: 10px 20px;
+            margin: 20px auto;
+            max-width: 300px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .visitor-counter::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #3498db, #e74c3c);
+            z-index: 1;
+        }
+        
+        .visitor-counter h3 {
+            margin: 0 0 5px 0;
+            color: #2c3e50;
+            font-size: 18px;
+        }
+        
+        .visitor-counter p {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(90deg, #3498db, #e74c3c);
+            -webkit-background-clip: text;
+            color: transparent;
+            background-clip: text;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <h1>Game Collection</h1>
+        
+        <div class="visitor-counter">
+            <h3>Total Visitors</h3>
+            <p id="visitor-count">0</p>
+        </div>
+        
         <div class="game-menu">
             <div class="game-card" onclick="location.href='snake.html'">
                 <h2>Snake</h2>
@@ -22,7 +70,47 @@
                 <h2>Tic-tac-toe</h2>
                 <p>Classic Tic-tac-toe game. Play against a friend on the same device.</p>
             </div>
+            <div class="game-card" onclick="location.href='pong.html'">
+                <h2>Pong</h2>
+                <p>Classic Pong arcade game. Use UP/DOWN keys to control your paddle and beat the AI opponent.</p>
+            </div>
+            <div class="game-card" onclick="location.href='memory-game.html'">
+                <h2>Memory Card Game</h2>
+                <p>Test your memory by finding matching pairs of cards. Challenge yourself with different difficulty levels!</p>
+            </div>
+            <div class="game-card" onclick="location.href='minesweeper.html'">
+                <h2>Minesweeper</h2>
+                <p>Classic puzzle game where you clear a minefield without detonating any mines. Use logic to identify safe cells!</p>
+            </div>
+            <div class="game-card" onclick="location.href='breakout.html'">
+                <h2>Breakout</h2>
+                <p>Classic arcade brick-breaker game. Control the paddle to bounce the ball and destroy all bricks!</p>
+            </div>
+            <div class="game-card" onclick="location.href='space-invaders.html'">
+                <h2>Space Invaders</h2>
+                <p>Defend Earth from alien invaders! Move your ship and shoot down the enemies before they reach you.</p>
+            </div>
+            <div class="game-card" onclick="location.href='hangman.html'">
+                <h2>Hangman</h2>
+                <p>Classic word guessing game. Try to guess the hidden word before you run out of attempts!</p>
+            </div>
         </div>
     </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Get the visitor count from localStorage or initialize to 0
+            let visitorCount = parseInt(localStorage.getItem('visitor-count') || '0', 10);
+            
+            // Increment the count for this visit
+            visitorCount++;
+            
+            // Save the updated count
+            localStorage.setItem('visitor-count', visitorCount);
+            
+            // Display the count on the page
+            document.getElementById('visitor-count').textContent = visitorCount;
+        });
+    </script>
 </body>
 </html>

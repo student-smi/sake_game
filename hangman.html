@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hangman</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --primary-dark: #2980b9;
+            --primary-light: #5dade2;
+            --secondary-color: #e74c3c;
+            --secondary-dark: #c0392b;
+            --secondary-light: #f1948a;
+            --text-dark: #2c3e50;
+            --text-light: #f8f9fa;
+            --text-muted: #6c757d;
+            --shadow-sm: 0 3px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.2);
+            --border-radius-sm: 5px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 15px;
+        }
+        
+        .game-container {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 25px;
+            margin: 20px auto;
+            max-width: 700px;
+            width: 95%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            z-index: 1;
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .game-title {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            color: transparent;
+            background-clip: text;
+            font-size: clamp(24px, 6vw, 32px);
+            margin: 0;
+        }
+        
+        .back-button {
+            padding: 8px 15px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-size: clamp(12px, 3vw, 14px);
+            font-weight: bold;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .back-button:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px 15px;
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-sm);
+            min-width: 120px;
+            text-align: center;
+            flex: 1;
+        }
+        
+        .stat-box p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        
+        .stat-box h3 {
+            margin: 5px 0 0;
+            font-size: 24px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            color: transparent;
+            background-clip: text;
+        }
+        
+        .game-content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+        
+        .hangman-drawing {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .hangman-svg {
+            width: 250px;
+            height: 300px;
+        }
+        
+        .word-section {
+            flex: 1;
+            min-width: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .word-display {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+        
+        .letter-box {
+            width: 35px;
+            height: 40px;
+            border-bottom: 3px solid var(--text-dark);
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-dark);
+        }
+        
+        .hint-text {
+            font-size: 16px;
+            color: var(--text-dark);
+            margin-bottom: 10px;
+            text-align: center;
+            font-style: italic;
+        }
+        
+        .keyboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            max-width: 500px;
+            margin: 0 auto;
+            justify-content: center;
+        }
+        
+        .keyboard-row {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .key {
+            width: 40px;
+            height: 45px;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: var(--border-radius-sm);
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-dark);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .key:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .key.correct {
+            background: #28a745;
+            color: white;
+            border-color: #28a745;
+        }
+        
+        .key.incorrect {
+            background: #6c757d;
+            color: white;
+            border-color: #6c757d;
+        }
+        
+        .key[disabled] {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .difficulty-selector {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .difficulty-btn {
+            padding: 8px 15px;
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid transparent;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .difficulty-btn:hover {
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .difficulty-btn.active {
+            border-color: var(--primary-color);
+            background: rgba(255, 255, 255, 0.9);
+            color: var(--primary-color);
+        }
+        
+        .game-controls {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+            gap: 10px;
+        }
+        
+        .game-btn {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .game-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .game-btn.new-game {
+            background: linear-gradient(135deg, var(--secondary-color), var(--secondary-dark));
+        }
+        
+        .message {
+            text-align: center;
+            margin: 15px 0;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 27px;
+        }
+        
+        .message.correct {
+            color: #28a745;
+        }
+        
+        .message.incorrect {
+            color: #dc3545;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: var(--border-radius-lg);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: var(--shadow-lg);
+        }
+        
+        .modal-title {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+        
+        .modal-title.win {
+            color: #28a745;
+        }
+        
+        .modal-title.lose {
+            color: #dc3545;
+        }
+        
+        .modal-message {
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Hangman SVG styles */
+        #hangman-svg line, #hangman-svg circle, #hangman-svg ellipse, #hangman-svg path {
+            stroke: var(--text-dark);
+            stroke-width: 3;
+            fill: none;
+        }
+        
+        @media (max-width: 600px) {
+            .game-stats {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .stat-box {
+                width: 100%;
+                max-width: 200px;
+            }
+            
+            .difficulty-selector {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .difficulty-btn {
+                width: 100%;
+                max-width: 200px;
+                text-align: center;
+            }
+            
+            .key {
+                width: 32px;
+                height: 38px;
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="game-container">
+            <div class="game-header">
+                <h2 class="game-title">Hangman</h2>
+                <button class="back-button" onclick="location.href='index.html'">Back to Menu</button>
+            </div>
+            
+            <div class="game-stats">
+                <div class="stat-box">
+                    <p>SCORE</p>
+                    <h3 id="score">0</h3>
+                </div>
+                <div class="stat-box">
+                    <p>STREAK</p>
+                    <h3 id="streak">0</h3>
+                </div>
+                <div class="stat-box">
+                    <p>BEST STREAK</p>
+                    <h3 id="best-streak">0</h3>
+                </div>
+            </div>
+            
+            <div class="difficulty-selector">
+                <button class="difficulty-btn active" data-difficulty="easy">Easy</button>
+                <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+                <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+            </div>
+            
+            <div class="game-controls">
+                <button id="new-game-btn" class="game-btn new-game">New Game</button>
+                <button id="hint-btn" class="game-btn">Show Hint</button>
+            </div>
+            
+            <div class="message" id="message"></div>
+            
+            <div class="game-content">
+                <div class="hangman-drawing">
+                    <svg id="hangman-svg" class="hangman-svg" viewBox="0 0 300 300">
+                        <!-- Base -->
+                        <line id="part-0" x1="50" y1="280" x2="250" y2="280" />
+                        <!-- Vertical pole -->
+                        <line id="part-1" x1="100" y1="280" x2="100" y2="50" />
+                        <!-- Horizontal beam -->
+                        <line id="part-2" x1="100" y1="50" x2="200" y2="50" />
+                        <!-- Rope -->
+                        <line id="part-3" x1="200" y1="50" x2="200" y2="80" />
+                        <!-- Head -->
+                        <circle id="part-4" cx="200" cy="100" r="20" />
+                        <!-- Body -->
+                        <line id="part-5" x1="200" y1="120" x2="200" y2="190" />
+                        <!-- Left arm -->
+                        <line id="part-6" x1="200" y1="140" x2="170" y2="120" />
+                        <!-- Right arm -->
+                        <line id="part-7" x1="200" y1="140" x2="230" y2="120" />
+                        <!-- Left leg -->
+                        <line id="part-8" x1="200" y1="190" x2="170" y2="230" />
+                        <!-- Right leg -->
+                        <line id="part-9" x1="200" y1="190" x2="230" y2="230" />
+                    </svg>
+                </div>
+                
+                <div class="word-section">
+                    <div id="word-display" class="word-display"></div>
+                    <div id="hint-text" class="hint-text"></div>
+                    
+                    <div class="keyboard">
+                        <div class="keyboard-row">
+                            <button class="key" data-key="Q">Q</button>
+                            <button class="key" data-key="W">W</button>
+                            <button class="key" data-key="E">E</button>
+                            <button class="key" data-key="R">R</button>
+                            <button class="key" data-key="T">T</button>
+                            <button class="key" data-key="Y">Y</button>
+                            <button class="key" data-key="U">U</button>
+                            <button class="key" data-key="I">I</button>
+                            <button class="key" data-key="O">O</button>
+                            <button class="key" data-key="P">P</button>
+                        </div>
+                        <div class="keyboard-row">
+                            <button class="key" data-key="A">A</button>
+                            <button class="key" data-key="S">S</button>
+                            <button class="key" data-key="D">D</button>
+                            <button class="key" data-key="F">F</button>
+                            <button class="key" data-key="G">G</button>
+                            <button class="key" data-key="H">H</button>
+                            <button class="key" data-key="J">J</button>
+                            <button class="key" data-key="K">K</button>
+                            <button class="key" data-key="L">L</button>
+                        </div>
+                        <div class="keyboard-row">
+                            <button class="key" data-key="Z">Z</button>
+                            <button class="key" data-key="X">X</button>
+                            <button class="key" data-key="C">C</button>
+                            <button class="key" data-key="V">V</button>
+                            <button class="key" data-key="B">B</button>
+                            <button class="key" data-key="N">N</button>
+                            <button class="key" data-key="M">M</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal" id="game-modal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modal-title">Game Over</h2>
+            <p class="modal-message" id="modal-message">The word was: <span id="word-reveal"></span></p>
+            <button class="modal-btn" id="modal-btn">Play Again</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Game elements
+            const wordDisplay = document.getElementById('word-display');
+            const hintText = document.getElementById('hint-text');
+            const scoreElement = document.getElementById('score');
+            const streakElement = document.getElementById('streak');
+            const bestStreakElement = document.getElementById('best-streak');
+            const newGameBtn = document.getElementById('new-game-btn');
+            const hintBtn = document.getElementById('hint-btn');
+            const keyboardKeys = document.querySelectorAll('.key');
+            const messageElement = document.getElementById('message');
+            const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+            const hangmanParts = document.querySelectorAll('#hangman-svg [id^="part-"]');
+            const gameModal = document.getElementById('game-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalMessage = document.getElementById('modal-message');
+            const wordReveal = document.getElementById('word-reveal');
+            const modalBtn = document.getElementById('modal-btn');
+            
+            // Word lists by difficulty
+            const wordsByDifficulty = {
+                easy: [
+                    {word: "APPLE", hint: "A common fruit that keeps the doctor away"},
+                    {word: "BEACH", hint: "A sandy shore by the ocean"},
+                    {word: "CHAIR", hint: "Something you sit on"},
+                    {word: "DANCE", hint: "Moving to the rhythm of music"},
+                    {word: "EARTH", hint: "The planet we live on"},
+                    {word: "FRUIT", hint: "Edible plant part that contains seeds"},
+                    {word: "GLASS", hint: "Transparent material used for windows"},
+                    {word: "HOUSE", hint: "A place where people live"},
+                    {word: "JUICE", hint: "Liquid extracted from fruits or vegetables"},
+                    {word: "KITE", hint: "Flies in the wind on a string"},
+                    {word: "LIGHT", hint: "Makes things visible"},
+                    {word: "MUSIC", hint: "Sounds arranged in a pleasing sequence"},
+                    {word: "NIGHT", hint: "Time when it's dark outside"},
+                    {word: "PAPER", hint: "Material used for writing"},
+                    {word: "QUEEN", hint: "Female ruler of a monarchy"}
+                ],
+                medium: [
+                    {word: "AIRPORT", hint: "Where planes take off and land"},
+                    {word: "BICYCLE", hint: "Two-wheeled human-powered vehicle"},
+                    {word: "CAPTURE", hint: "To take into possession or control by force"},
+                    {word: "DIAMOND", hint: "Precious gemstone and hardest natural material"},
+                    {word: "ELEPHANT", hint: "Largest land animal with a trunk"},
+                    {word: "FANTASTIC", hint: "Extraordinarily good or attractive"},
+                    {word: "GRAVITY", hint: "Force that attracts objects toward earth"},
+                    {word: "HORIZON", hint: "Line where the earth meets the sky"},
+                    {word: "IMAGINE", hint: "Form a mental image of something"},
+                    {word: "JOURNEY", hint: "Travel from one place to another"},
+                    {word: "KITCHEN", hint: "Room where food is prepared"},
+                    {word: "LAUGHTER", hint: "Sound of amusement"},
+                    {word: "MOUNTAIN", hint: "Very high natural elevation of earth's surface"},
+                    {word: "NOTEBOOK", hint: "Book with blank pages for writing notes"},
+                    {word: "OBSTACLE", hint: "Something that blocks your way"}
+                ],
+                hard: [
+                    {word: "ASTRONAUT", hint: "Person trained to travel in a spacecraft"},
+                    {word: "BOULEVARD", hint: "Broad city street, often lined with trees"},
+                    {word: "CONSPIRACY", hint: "Secret plan by a group to do something harmful"},
+                    {word: "DIPLOMACY", hint: "Managing international relations through negotiation"},
+                    {word: "EXHAUSTION", hint: "State of extreme physical or mental fatigue"},
+                    {word: "FREQUENCY", hint: "Rate at which something occurs over time"},
+                    {word: "GOVERNMENT", hint: "System or group that controls and makes decisions for a country"},
+                    {word: "HELICOPTER", hint: "Aircraft with horizontal rotating blades"},
+                    {word: "INCREDIBLE", hint: "Impossible or very difficult to believe"},
+                    {word: "JUXTAPOSE", hint: "Place or deal with close together for contrast"},
+                    {word: "KNOWLEDGE", hint: "Facts, information, and skills acquired through experience"},
+                    {word: "LUMINESCENT", hint: "Emitting light not derived from heat"},
+                    {word: "METICULOUS", hint: "Showing great attention to detail"},
+                    {word: "NIGHTINGALE", hint: "Small bird known for its beautiful night song"},
+                    {word: "OBLIGATION", hint: "Act or course of action to which a person is morally or legally bound"}
+                ]
+            };
+            
+            // Game variables
+            let currentWord = "";
+            let currentHint = "";
+            let guessedLetters = [];
+            let wrongGuesses = 0;
+            let gameActive = false;
+            let score = 0;
+            let streak = 0;
+            let bestStreak = parseInt(localStorage.getItem('hangman-best-streak') || '0', 10);
+            let difficulty = 'easy';
+            let hintUsed = false;
+            const maxWrongGuesses = 10;
+            
+            // Initialize best streak display
+            bestStreakElement.textContent = bestStreak;
+            
+            // Set up difficulty selection
+            difficultyBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (!gameActive || confirm("Changing difficulty will start a new game. Continue?")) {
+                        difficultyBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        difficulty = btn.dataset.difficulty;
+                        startNewGame();
+                    }
+                });
+            });
+            
+            // Event listeners
+            newGameBtn.addEventListener('click', startNewGame);
+            hintBtn.addEventListener('click', showHint);
+            
+            keyboardKeys.forEach(key => {
+                key.addEventListener('click', function() {
+                    if (gameActive && !this.disabled) {
+                        const letter = this.dataset.key;
+                        handleGuess(letter);
+                    }
+                });
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (gameActive) {
+                    const key = e.key.toUpperCase();
+                    if (/^[A-Z]$/.test(key)) {
+                        handleGuess(key);
+                    }
+                }
+            });
+            
+            modalBtn.addEventListener('click', () => {
+                gameModal.classList.remove('show');
+                startNewGame();
+            });
+            
+            // Start new game
+            function startNewGame() {
+                // Reset game state
+                guessedLetters = [];
+                wrongGuesses = 0;
+                hintUsed = false;
+                gameActive = true;
+                
+                // Reset hangman visualization
+                hangmanParts.forEach(part => {
+                    part.style.display = 'none';
+                });
+                
+                // Reset keyboard
+                keyboardKeys.forEach(key => {
+                    key.classList.remove('correct', 'incorrect');
+                    key.disabled = false;
+                });
+                
+                // Reset message and hint
+                messageElement.textContent = '';
+                messageElement.className = 'message';
+                hintText.textContent = 'Need help? Use the hint button!';
+                
+                // Choose a random word based on difficulty
+                const wordList = wordsByDifficulty[difficulty];
+                const randomIndex = Math.floor(Math.random() * wordList.length);
+                currentWord = wordList[randomIndex].word;
+                currentHint = wordList[randomIndex].hint;
+                
+                // Update word display
+                updateWordDisplay();
+                
+                // Enable hint button
+                hintBtn.disabled = false;
+            }
+            
+            // Show hint
+            function showHint() {
+                if (gameActive && !hintUsed) {
+                    hintText.textContent = currentHint;
+                    hintUsed = true;
+                    // Disable hint button after use
+                    hintBtn.disabled = true;
+                }
+            }
+            
+            // Handle letter guess
+            function handleGuess(letter) {
+                // Skip if letter already guessed
+                if (guessedLetters.includes(letter)) {
+                    return;
+                }
+                
+                // Add to guessed letters
+                guessedLetters.push(letter);
+                
+                // Find keyboard key
+                const keyElement = document.querySelector(`.key[data-key="${letter}"]`);
+                
+                // Check if letter is in the word
+                if (currentWord.includes(letter)) {
+                    if (keyElement) keyElement.classList.add('correct');
+                    updateWordDisplay();
+                    checkWin();
+                } else {
+                    if (keyElement) keyElement.classList.add('incorrect');
+                    wrongGuesses++;
+                    updateHangman();
+                    checkLoss();
+                }
+                
+                // Disable the key
+                if (keyElement) keyElement.disabled = true;
+            }
+            
+            // Update word display with correctly guessed letters
+            function updateWordDisplay() {
+                wordDisplay.innerHTML = '';
+                
+                for (const letter of currentWord) {
+                    const letterBox = document.createElement('div');
+                    letterBox.classList.add('letter-box');
+                    
+                    if (guessedLetters.includes(letter)) {
+                        letterBox.textContent = letter;
+                    } else {
+                        letterBox.textContent = '';
+                    }
+                    
+                    wordDisplay.appendChild(letterBox);
+                }
+            }
+            
+            // Update hangman visualization based on wrong guesses
+            function updateHangman() {
+                if (wrongGuesses > 0 && wrongGuesses <= maxWrongGuesses) {
+                    hangmanParts[wrongGuesses - 1].style.display = 'block';
+                }
+            }
+            
+            // Check if player has won
+            function checkWin() {
+                const hasWon = [...currentWord].every(letter => guessedLetters.includes(letter));
+                
+                if (hasWon) {
+                    gameActive = false;
+                    
+                    // Calculate score based on difficulty, word length, and wrong guesses
+                    const difficultyMultiplier = difficulty === 'easy' ? 1 : difficulty === 'medium' ? 2 : 3;
+                    const pointsPerLetter = 10;
+                    const penaltyPerWrongGuess = 5;
+                    const hintPenalty = hintUsed ? 20 : 0;
+                    
+                    const roundScore = (currentWord.length * pointsPerLetter * difficultyMultiplier) - 
+                                      (wrongGuesses * penaltyPerWrongGuess) - hintPenalty;
+                    
+                    score += Math.max(roundScore, 5); // Minimum 5 points per win
+                    streak++;
+                    
+                    // Update best streak if current streak is better
+                    if (streak > bestStreak) {
+                        bestStreak = streak;
+                        localStorage.setItem('hangman-best-streak', bestStreak);
+                        bestStreakElement.textContent = bestStreak;
+                    }
+                    
+                    // Update displays
+                    scoreElement.textContent = score;
+                    streakElement.textContent = streak;
+                    
+                    // Show success message
+                    messageElement.textContent = 'You won!';
+                    messageElement.className = 'message correct';
+                    
+                    // Show win modal
+                    modalTitle.textContent = 'You Win!';
+                    modalTitle.className = 'modal-title win';
+                    modalMessage.innerHTML = `Congratulations! You guessed the word!<br>Score: +${roundScore}<br>Total: ${score}`;
+                    wordReveal.textContent = currentWord;
+                    gameModal.classList.add('show');
+                }
+            }
+            
+            // Check if player has lost
+            function checkLoss() {
+                if (wrongGuesses >= maxWrongGuesses) {
+                    gameActive = false;
+                    
+                    // Reset streak
+                    streak = 0;
+                    streakElement.textContent = streak;
+                    
+                    // Show fail message
+                    messageElement.textContent = 'Game Over!';
+                    messageElement.className = 'message incorrect';
+                    
+                    // Reveal the word by updating display with all letters
+                    wordDisplay.innerHTML = '';
+                    for (const letter of currentWord) {
+                        const letterBox = document.createElement('div');
+                        letterBox.classList.add('letter-box');
+                        letterBox.textContent = letter;
+                        
+                        if (!guessedLetters.includes(letter)) {
+                            letterBox.style.color = '#dc3545';
+                        }
+                        
+                        wordDisplay.appendChild(letterBox);
+                    }
+                    
+                    // Show lose modal
+                    modalTitle.textContent = 'Game Over';
+                    modalTitle.className = 'modal-title lose';
+                    modalMessage.innerHTML = `The word was: <span style="font-weight:bold">${currentWord}</span><br>Better luck next time!`;
+                    wordReveal.textContent = currentWord;
+                    gameModal.classList.add('show');
+                }
+            }
+            
+            // Initialize the game
+            startNewGame();
+        });
+    </script>
+</body>
+</html> 

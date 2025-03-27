@@ -6,13 +6,79 @@
     <title>Snake Game</title>
     <link rel="stylesheet" href="styles.css">
     <style>
+        :root {
+            --primary-color: #27ae60;
+            --primary-dark: #218838;
+            --primary-light: #34ce57;
+            --secondary-color: #dc3545;
+            --secondary-light: #e35d6a;
+            --bg-light: #f8f9fa;
+            --bg-medium: #e9ecef;
+            --text-dark: #2c3e50;
+            --text-muted: #6c757d;
+            --shadow-sm: 0 3px 8px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.2);
+            --border-radius-sm: 5px;
+            --border-radius-md: 8px;
+            --border-radius-lg: 15px;
+        }
+        
+        .game-container {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: var(--border-radius-lg);
+            box-shadow: var(--shadow-lg);
+            padding: 25px;
+            margin: 20px auto;
+            max-width: 600px;
+            width: 95%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .game-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            z-index: 1;
+        }
+        
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .game-title {
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            color: transparent;
+            background-clip: text;
+            font-size: clamp(24px, 6vw, 32px);
+            margin: 0;
+        }
+        
         #snake-game {
             display: block;
             margin: 0 auto;
-            background-color: #f8f9fa;
+            background-color: var(--bg-light);
             border: 2px solid #343a40;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--shadow-md);
             transition: all 0.3s ease;
+            width: 100%;
+            max-width: 500px;
+            height: auto;
+            aspect-ratio: 1 / 1;
+            touch-action: none;
         }
         
         .game-info {
@@ -21,9 +87,11 @@
             margin-bottom: 15px;
             background: rgba(255, 255, 255, 0.8);
             padding: 10px 15px;
-            border-radius: 8px;
-            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+            border-radius: var(--border-radius-md);
+            box-shadow: var(--shadow-sm);
             animation: fadeIn 0.5s ease-out;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
         }
         
         .controls {
@@ -34,12 +102,57 @@
         
         .controls p {
             margin: 5px 0;
-            color: #6c757d;
+            color: var(--text-muted);
             transition: color 0.3s ease;
+            font-size: clamp(14px, 4vw, 16px);
+        }
+        
+        .mobile-controls {
+            display: none;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .mobile-btn {
+            background: rgba(255, 255, 255, 0.8);
+            border: none;
+            border-radius: var(--border-radius-md);
+            padding: 15px;
+            font-size: 20px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-dark);
+        }
+        
+        .mobile-btn:active {
+            transform: scale(0.95);
+            background: rgba(230, 230, 230, 0.8);
+        }
+        
+        .mobile-controls-row {
+            display: flex;
+            gap: 10px;
         }
         
         #start-btn {
-            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: var(--border-radius-sm);
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: clamp(14px, 4vw, 16px);
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
             box-shadow: 0 4px 10px rgba(46, 204, 113, 0.3);
             transition: all 0.3s ease;
             animation: pulse 2s infinite;
@@ -51,10 +164,15 @@
             box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4);
         }
         
+        #start-btn:active {
+            transform: translateY(-1px);
+        }
+        
         #score, #high-score {
             font-weight: bold;
-            color: #2c3e50;
+            color: var(--text-dark);
             transition: all 0.2s ease;
+            font-size: clamp(16px, 5vw, 18px);
         }
         
         /* Food animation */
@@ -73,9 +191,39 @@
         
         /* Score increase animation */
         @keyframes scoreIncrease {
-            0% { transform: scale(1); color: #2c3e50; }
-            50% { transform: scale(1.5); color: #27ae60; }
-            100% { transform: scale(1); color: #2c3e50; }
+            0% { transform: scale(1); color: var(--text-dark); }
+            50% { transform: scale(1.5); color: var(--primary-color); }
+            100% { transform: scale(1); color: var(--text-dark); }
+        }
+        
+        /* Media Queries for Responsive Design */
+        @media (max-width: 768px) {
+            .game-container {
+                padding: 15px;
+            }
+            
+            #snake-game {
+                max-width: 100%;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .mobile-controls {
+                display: flex;
+            }
+            
+            .controls p:last-child {
+                display: none;
+            }
+            
+            .game-header {
+                justify-content: center;
+                text-align: center;
+            }
+            
+            .back-button {
+                margin-top: 10px;
+            }
         }
     </style>
 </head>
@@ -96,6 +244,17 @@
                 <p>Use Arrow Keys to control the snake</p>
                 <p>Or use swipe gestures on touch devices</p>
             </div>
+            
+            <div class="mobile-controls">
+                <div class="mobile-controls-row">
+                    <button class="mobile-btn" id="up-btn">↑</button>
+                </div>
+                <div class="mobile-controls-row">
+                    <button class="mobile-btn" id="left-btn">←</button>
+                    <button class="mobile-btn" id="down-btn">↓</button>
+                    <button class="mobile-btn" id="right-btn">→</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -106,11 +265,38 @@
             const startBtn = document.getElementById('start-btn');
             const scoreElement = document.getElementById('score');
             const highScoreElement = document.getElementById('high-score');
+            const upBtn = document.getElementById('up-btn');
+            const downBtn = document.getElementById('down-btn');
+            const leftBtn = document.getElementById('left-btn');
+            const rightBtn = document.getElementById('right-btn');
+            
+            // Responsive canvas sizing
+            function resizeCanvas() {
+                const canvasWidth = canvas.offsetWidth;
+                canvas.width = canvasWidth;
+                canvas.height = canvasWidth;
+                
+                // Update grid size based on canvas dimensions
+                gridSize = canvasWidth / 20; // 20x20 grid
+                gridWidth = 20;
+                gridHeight = 20;
+                
+                // Redraw if game is already running
+                if (gameRunning) {
+                    draw();
+                }
+            }
+            
+            // Initialize canvas size
+            resizeCanvas();
+            
+            // Resize canvas when window size changes
+            window.addEventListener('resize', resizeCanvas);
             
             // Game variables
-            const gridSize = 20;
-            const gridWidth = canvas.width / gridSize;
-            const gridHeight = canvas.height / gridSize;
+            let gridSize = canvas.width / 20;
+            let gridWidth = 20;
+            let gridHeight = 20;
             let snake = [];
             let food = {};
             let direction = 'right';
@@ -320,6 +506,31 @@
             
             // Event listeners
             startBtn.addEventListener('click', initGame);
+            
+            // Mobile controls
+            upBtn.addEventListener('click', () => {
+                if (direction !== 'down' && gameRunning) {
+                    nextDirection = 'up';
+                }
+            });
+            
+            downBtn.addEventListener('click', () => {
+                if (direction !== 'up' && gameRunning) {
+                    nextDirection = 'down';
+                }
+            });
+            
+            leftBtn.addEventListener('click', () => {
+                if (direction !== 'right' && gameRunning) {
+                    nextDirection = 'left';
+                }
+            });
+            
+            rightBtn.addEventListener('click', () => {
+                if (direction !== 'left' && gameRunning) {
+                    nextDirection = 'right';
+                }
+            });
             
             // Keyboard controls
             document.addEventListener('keydown', (e) => {
